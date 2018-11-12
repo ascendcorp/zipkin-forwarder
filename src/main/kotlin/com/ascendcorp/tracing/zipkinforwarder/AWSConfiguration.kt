@@ -18,12 +18,14 @@ import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.client.builder.AwsClientBuilder
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import zipkin2.codec.Encoding
 import zipkin2.reporter.kinesis.KinesisSender
 
 @Configuration
+@ConditionalOnProperty(name = ["destination.type"], havingValue = "aws-kinesis")
 class AWSConfiguration (
   @Value("\${aws.accesskey}") val accessKey : String,
   @Value("\${aws.secretkey}") val secretKey : String,

@@ -34,7 +34,7 @@ import javax.validation.Valid
 @RestController
 @RequestMapping("/api")
 class ProxyController(private val kinesisSender: KinesisSender) {
-  private val logger = LoggerFactory.getLogger(ProxyController::class.simpleName)
+  val logger = LoggerFactory.getLogger(this.javaClass)
 
   // TODO: Refactor this to accept other encodings and move to common functions
 
