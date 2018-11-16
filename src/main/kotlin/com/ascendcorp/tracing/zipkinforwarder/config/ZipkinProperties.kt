@@ -12,19 +12,6 @@
  *   the License.
  */
 
-package com.ascendcorp.tracing.zipkinforwarder
+package com.ascendcorp.tracing.zipkinforwarder.config
 
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.junit4.SpringRunner
-
-@RunWith(SpringRunner::class)
-@SpringBootTest
-class ZipkinTransportApplicationTests {
-
-	@Test
-	fun contextLoads() {
-	}
-
-}
+data class ZipkinProperties (val spanEncoding: String, val type: String )

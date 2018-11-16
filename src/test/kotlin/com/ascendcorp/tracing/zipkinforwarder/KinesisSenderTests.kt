@@ -14,6 +14,8 @@
 
 package com.ascendcorp.tracing.zipkinforwarder
 
+import com.ascendcorp.tracing.zipkinforwarder.config.AWSConfiguration
+import com.ascendcorp.tracing.zipkinforwarder.config.ForwarderConfiguration
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -26,14 +28,26 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader
 
 @RunWith(SpringRunner::class)
 @SpringBootTest(properties = ["destination.type=aws-kinesis"])
-@ContextConfiguration(classes = [AWSConfiguration::class],
+@ContextConfiguration(
+    classes = [ForwarderConfiguration::class, AWSConfiguration::class, SpanTransport::class],
     loader = AnnotationConfigContextLoader::class)
-class AWSConfigurationTests {
+class KinesisSenderTests {
+
   @Autowired
   lateinit var context: ApplicationContext
 
+  @Autowired
+  lateinit var forwarder: SpanTransport
+
   @Test
-  fun `AWSConfiguration is loaded when required property is set`(){
-    assertThat(context.containsBean("kinesisSender"))
+  fun `AWSConfiguration is loaded when required property is set`() {
+    assertThat(context.containsBean("kinesisSender")).isTrue()
   }
+
+  @Test
+  fun `Sends trace to Kinesis with no enpoints`(){
+    forwarder.forward(TestObjects.TRACE)
+    assertThat(forwarder.kinesisSender.check().ok()).isFalse()
+  }
+
 }

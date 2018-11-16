@@ -14,55 +14,38 @@
 
 package com.ascendcorp.tracing.zipkinforwarder
 
-import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
-import org.springframework.http.server.reactive.ServerHttpRequest
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
-import zipkin2.Call
 import zipkin2.Span
-import zipkin2.codec.Encoding
 import zipkin2.codec.SpanBytesDecoder
-import zipkin2.codec.SpanBytesEncoder
-import zipkin2.reporter.kinesis.KinesisSender
 import java.util.ArrayList
-import javax.validation.Valid
 
 @RestController
 @RequestMapping("/api")
-class ProxyController(private val kinesisSender: KinesisSender) {
-  val logger = LoggerFactory.getLogger(this.javaClass)
+class TransportController() {
 
-  // TODO: Refactor this to accept other encodings and move to common functions
+  @Autowired
+  lateinit var forwarder: SpanTransport
 
   @PostMapping("/v2/spans")
   @ResponseStatus(HttpStatus.ACCEPTED)
-  fun processV2Spans(@Valid @RequestBody reqSpans: String, request: ServerHttpRequest) {
+  fun processV2Spans(@RequestBody reqSpans: String) {
     val spans = ArrayList<Span>()
     SpanBytesDecoder.JSON_V2.decodeList(reqSpans.toByteArray(), spans)
-    send(spans.toTypedArray()).execute()
-    logger.info("Kinesis Status {}", kinesisSender.check().toString())
+    forwarder.forward(spans.toList())
   }
 
   @PostMapping("/v1/spans")
   @ResponseStatus(HttpStatus.ACCEPTED)
-  fun processV1Spans(@Valid @RequestBody reqSpans: String, request: ServerHttpRequest) {
+  fun processV1Spans(@RequestBody reqSpans: String) {
     val spans = ArrayList<Span>()
     SpanBytesDecoder.JSON_V1.decodeList(reqSpans.toByteArray(), spans)
-    send(spans.toTypedArray()).execute()
-    logger.info("Kinesis Status {}", kinesisSender.check().toString())
+    forwarder.forward(spans.toList())
   }
 
-  private fun send(spans: Array<Span>): Call<Void> {
-    val bytesEncoder: SpanBytesEncoder = when (kinesisSender.encoding()) {
-      Encoding.JSON -> SpanBytesEncoder.JSON_V2
-      Encoding.THRIFT -> SpanBytesEncoder.THRIFT
-      Encoding.PROTO3 -> SpanBytesEncoder.PROTO3
-      else -> throw UnsupportedOperationException("encoding: " + kinesisSender.encoding())
-    }
-    return kinesisSender.sendSpans(spans.map(bytesEncoder::encode).toList())
-  }
 }

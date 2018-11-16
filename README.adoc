@@ -8,17 +8,18 @@ It collects spans via HTTP transport and forwards to different Zipkin Collectors
 
 == Running the service
 
-Clone the repository and run `mvn spring-boot:run`
+Clone the repository and run `mvn clean spring-boot:run`
+
+Provide the configuration in the `application.properties file`
 
 == Zipkin Collectors
 
-*Current Status:* Only supports AWS Kinesis as the middleware needs Zipkin Kinesis Collector to
-collect
-the spans
+*Current Status:*
+  - Supports AWS Kinesis as the middleware needs Zipkin Kinesis Collector to collect the spans
+  - Supports Forwarding to Zipkin Http Collectors
 
 *Future Work:*
-Support for Zipkin-GCP, Zipkin-Azure and Http Collectors
-Move collectors to auto configuration
+Support for Zipkin-GCP, Zipkin-Azure
 
 == LICENSE
 

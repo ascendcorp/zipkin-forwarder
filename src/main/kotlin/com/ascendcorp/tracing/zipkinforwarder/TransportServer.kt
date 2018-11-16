@@ -18,12 +18,21 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.web.reactive.config.EnableWebFlux
 
+//import org.springframework.web.reactive.config.EnableWebFlux
+
 @SpringBootApplication
 @EnableWebFlux
-class ZipkinProxyServer
-
-  fun main(args: Array<String>) {
-    runApplication<ZipkinProxyServer>(*args)
+class ZipkinProxyServer {
+  companion object {
+    init {
+      System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager");
+    }
   }
 
+}
+
+
+fun main(args: Array<String>) {
+  runApplication<ZipkinProxyServer>(*args)
+}
 

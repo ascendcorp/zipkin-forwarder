@@ -12,7 +12,7 @@
  *   the License.
  */
 
-package com.ascendcorp.tracing.zipkinforwarder
+package com.ascendcorp.tracing.zipkinforwarder.config
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.auth.BasicAWSCredentials
@@ -32,17 +32,16 @@ class AWSConfiguration (
   @Value("\${aws.kinesis.streamname}") val streamName: String,
   @Value("\${aws.region}") val region: String,
   @Value("\${aws.serviceEndpoint}") val serviceEndpoint: String,
-  @Value("\${zipkin.spanEncoding}") val spanEncoding: String
+  val config: ZipkinProperties
 ) {
   val awsCredentials =
       BasicAWSCredentials(this.accessKey, this.secretKey)
 
   @Bean
   fun kinesisSender(): KinesisSender {
-
     return KinesisSender.newBuilder()
         .streamName(this.streamName)
-        .encoding(getEncoding(spanEncoding))
+        .encoding(getEncoding(config.spanEncoding))
         .credentialsProvider(AWSStaticCredentialsProvider(awsCredentials))
         .endpointConfiguration(
             AwsClientBuilder.EndpointConfiguration(

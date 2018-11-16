@@ -12,19 +12,21 @@
  *   the License.
  */
 
-package com.ascendcorp.tracing.zipkinforwarder
+package com.ascendcorp.tracing.zipkinforwarder.config
 
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 
-@RunWith(SpringRunner::class)
-@SpringBootTest
-class ZipkinTransportApplicationTests {
+@Configuration
+class ForwarderConfiguration{
+  @Value("\${destination.spanEncoding}")
+  lateinit var  spanEncoding: String
+  @Value("\${destination.type}")
+  lateinit var  region: String
 
-	@Test
-	fun contextLoads() {
-	}
-
+  @Bean
+  fun zipkinForwarder(): ZipkinProperties {
+    return ZipkinProperties(spanEncoding, region)
+  }
 }

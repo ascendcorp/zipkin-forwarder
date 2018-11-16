@@ -14,17 +14,9 @@
 
 package com.ascendcorp.tracing.zipkinforwarder
 
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.junit4.SpringRunner
+import zipkin2.Call
+import zipkin2.Span
 
-@RunWith(SpringRunner::class)
-@SpringBootTest
-class ZipkinTransportApplicationTests {
-
-	@Test
-	fun contextLoads() {
-	}
-
+interface Transport {
+   fun forward(spans : List<Span>) : Any
 }
