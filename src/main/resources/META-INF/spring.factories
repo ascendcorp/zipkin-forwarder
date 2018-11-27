@@ -1,4 +1,5 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
 com.ascendcorp.tracing.zipkinforwarder.config.ForwarderConfiguration,\
 com.ascendcorp.tracing.zipkinforwarder.config.AWSConfiguration,\
-com.ascendcorp.tracing.zipkinforwarder.config.HttpConfiguration
+com.ascendcorp.tracing.zipkinforwarder.config.HttpConfiguration,\
+com.ascendcorp.tracing.zipkinforwarder.config.GCPConfiguration

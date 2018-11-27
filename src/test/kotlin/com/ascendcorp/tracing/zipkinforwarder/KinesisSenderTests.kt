@@ -29,7 +29,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader
 @RunWith(SpringRunner::class)
 @SpringBootTest(properties = ["destination.type=aws-kinesis"])
 @ContextConfiguration(
-    classes = [ForwarderConfiguration::class, AWSConfiguration::class, SpanTransport::class],
+    classes = [ForwarderConfiguration::class, AWSConfiguration::class, SpanTransporter::class],
     loader = AnnotationConfigContextLoader::class)
 class KinesisSenderTests {
 
@@ -37,7 +37,7 @@ class KinesisSenderTests {
   lateinit var context: ApplicationContext
 
   @Autowired
-  lateinit var forwarder: SpanTransport
+  lateinit var forwarder: SpanTransporter
 
   @Test
   fun `AWSConfiguration is loaded when required property is set`() {
@@ -45,7 +45,7 @@ class KinesisSenderTests {
   }
 
   @Test
-  fun `Sends trace to Kinesis with no enpoints`(){
+  fun `Sends trace to Kinesis with no enpoints`() {
     forwarder.forward(TestObjects.TRACE)
     assertThat(forwarder.kinesisSender.check().ok()).isFalse()
   }

@@ -4,7 +4,11 @@ Zipkin forwarder is a span forwarder service to ship spans between multiple data
 motivation behind this is to transport spans from cross data center and hybrid cloud
 setup and store them in a single place for analysis.
 
-It collects spans via HTTP transport and forwards to different Zipkin Collectors
+It collects spans via HTTP transport and accepts zipkin v1 and v2 JSON formats and forwards to
+different Zipkin Collectors
+
+Limitations: It is designed to work as a proxy for spring cloud sleuth and other encodings will
+be supported if required
 
 == Running the service
 
@@ -15,11 +19,13 @@ Provide the configuration in the `application.properties file`
 == Zipkin Collectors
 
 *Current Status:*
-  - Supports AWS Kinesis as the middleware needs Zipkin Kinesis Collector to collect the spans
-  - Supports Forwarding to Zipkin Http Collectors
+
+  * Supports AWS Kinesis as the middleware needs Zipkin Kinesis Collector to collect the spans
+  * Supports Forwarding to Zipkin Http Collectors
+  * Supports Forwarding to GCP Stackdriver
 
 *Future Work:*
-Support for Zipkin-GCP, Zipkin-Azure
+Support for Zipkin-GCP pub/sub, Kafka, RabbitMQ and Zipkin-Azure
 
 == LICENSE
 

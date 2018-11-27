@@ -16,7 +16,6 @@ package com.ascendcorp.tracing.zipkinforwarder
 
 import zipkin2.Endpoint
 import zipkin2.Span
-import java.util.TimeZone
 
 class TestObjects {
   companion object {
@@ -29,7 +28,7 @@ class TestObjects {
     val BACKEND =
         Endpoint.newBuilder().serviceName("backend")
             .ip("192.168.99.101").port(9000).build();
-    val  DB =
+    val DB =
         Endpoint.newBuilder().serviceName("db")
             .ip("2001:db8::c001").port(3036).build();
 

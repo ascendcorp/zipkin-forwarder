@@ -15,6 +15,7 @@
 package com.ascendcorp.tracing.zipkinforwarder
 
 import com.ascendcorp.tracing.zipkinforwarder.config.ZipkinProperties
+import com.google.common.collect.FluentIterable
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -23,9 +24,11 @@ import zipkin2.Span
 import zipkin2.codec.SpanBytesEncoder
 import zipkin2.reporter.kinesis.KinesisSender
 import zipkin2.reporter.okhttp3.OkHttpSender
+import zipkin2.reporter.stackdriver.StackdriverEncoder
+import zipkin2.reporter.stackdriver.StackdriverSender
 
 @Service
-class SpanTransport: Transport {
+class SpanTransporter: Transport {
 
   @Autowired(required = false)
   @Qualifier("kinesisSender")
@@ -35,10 +38,14 @@ class SpanTransport: Transport {
   @Qualifier("httpSender")
   lateinit var httpSender: OkHttpSender
 
+  @Autowired(required = false)
+  @Qualifier("stackDriverSender")
+  lateinit var stackDriverSender: StackdriverSender
+
   @Autowired
   lateinit var config: ZipkinProperties
 
-  val log = LoggerFactory.getLogger(SpanTransport::class.java)
+  val log = LoggerFactory.getLogger(SpanTransporter::class.java)
   
   override fun forward(spans: List<Span>)  {
     try {
@@ -51,6 +58,7 @@ class SpanTransport: Transport {
       when(config.type) {
         "aws-kinesis" -> sendToKinesis(spans, bytesEncoder)
         "http" -> sendToHttp(spans, bytesEncoder)
+        "gcp-stackdriver" -> sendToStackDriver(spans)
         else -> throw UnsupportedOperationException("Undefined Destination Type: " + config.type)
       }
     } catch (e: Exception){
@@ -60,12 +68,15 @@ class SpanTransport: Transport {
 
   private fun sendToKinesis(spans: List<Span>, bytesEncoder: SpanBytesEncoder) {
     kinesisSender.sendSpans(spans.map(bytesEncoder::encode).toList()).execute()
-    log.debug("Kinesis Sender Status: {} ",kinesisSender.check().toString())
   }
 
   private fun sendToHttp(spans: List<Span>, bytesEncoder: SpanBytesEncoder) {
     httpSender.sendSpans(spans.map(bytesEncoder::encode).toList()).execute()
-    log.debug("Http Sender Status: {} ",httpSender.check().toString())
   }
 
+  private fun sendToStackDriver(spans: List<Span>) {
+    val encodedSpans =
+        FluentIterable.from(spans).transform(StackdriverEncoder.V1::encode).toList();
+    stackDriverSender.sendSpans(encodedSpans).execute();
+  }
 }

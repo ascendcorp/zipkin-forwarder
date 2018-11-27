@@ -15,37 +15,33 @@
 package com.ascendcorp.tracing.zipkinforwarder
 
 import com.ascendcorp.tracing.zipkinforwarder.config.ForwarderConfiguration
-import com.ascendcorp.tracing.zipkinforwarder.config.HttpConfiguration
-import org.assertj.core.api.Assertions.assertThat
+import com.ascendcorp.tracing.zipkinforwarder.config.GCPConfiguration
+import org.assertj.core.api.Assertions
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.context.annotation.AnnotationConfigApplicationContext
+import org.springframework.context.ApplicationContext
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.context.support.AnnotationConfigContextLoader
 
 @RunWith(SpringRunner::class)
-@SpringBootTest(properties = ["destination.type=http", "http.zipkinHost=http://localhost:9411"])
-@ContextConfiguration(classes = [ForwarderConfiguration::class, HttpConfiguration::class,
-  SpanTransporter::class],
+@SpringBootTest(properties = ["destination.type=gcp-stackdriver"])
+@ContextConfiguration(
+    classes = [ForwarderConfiguration::class, GCPConfiguration::class, SpanTransporter::class],
     loader = AnnotationConfigContextLoader::class)
-class HttpSenderTests {
-
-  private var context = AnnotationConfigApplicationContext()
+class StackDriverSenderTests {
+  @Autowired
+  lateinit var context: ApplicationContext
 
   @Autowired
   lateinit var forwarder: SpanTransporter
 
   @Test
-  fun `Sends trace to HTTP Location`() {
-    forwarder.forward(TestObjects.TRACE)
-    assertThat(forwarder.httpSender.check().ok()).isTrue()
+  fun `GCPConfiguration is loaded when required property is set`() {
+    Assertions.assertThat(context.containsBean("stackDriverSender")).isTrue()
   }
 
-  @Test
-  fun `HttpConfiguration is loaded when required property is set`() {
-    assertThat(context.containsBean("httpSender"))
-  }
 }
+

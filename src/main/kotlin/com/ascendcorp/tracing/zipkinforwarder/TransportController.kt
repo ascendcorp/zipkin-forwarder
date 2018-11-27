@@ -30,7 +30,7 @@ import java.util.ArrayList
 class TransportController() {
 
   @Autowired
-  lateinit var forwarder: SpanTransport
+  lateinit var forwarder: SpanTransporter
 
   @PostMapping("/v2/spans")
   @ResponseStatus(HttpStatus.ACCEPTED)
