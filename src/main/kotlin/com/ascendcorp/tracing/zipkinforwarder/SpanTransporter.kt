@@ -20,12 +20,17 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
+import zipkin2.Call
+import zipkin2.Callback
 import zipkin2.Span
 import zipkin2.codec.SpanBytesEncoder
 import zipkin2.reporter.kinesis.KinesisSender
 import zipkin2.reporter.okhttp3.OkHttpSender
 import zipkin2.reporter.stackdriver.StackdriverEncoder
 import zipkin2.reporter.stackdriver.StackdriverSender
+import com.sun.xml.internal.ws.spi.db.BindingContextFactory.LOGGER
+
+
 
 @Service
 class SpanTransporter: Transport {
@@ -41,6 +46,10 @@ class SpanTransporter: Transport {
   @Autowired(required = false)
   @Qualifier("stackDriverSender")
   lateinit var stackDriverSender: StackdriverSender
+
+  @Autowired(required = false)
+  @Qualifier("pubSubSender")
+  lateinit var pubSubSender: PubSubSender
 
   @Autowired
   lateinit var config: ZipkinProperties
@@ -59,6 +68,7 @@ class SpanTransporter: Transport {
         "aws-kinesis" -> sendToKinesis(spans, bytesEncoder)
         "http" -> sendToHttp(spans, bytesEncoder)
         "gcp-stackdriver" -> sendToStackDriver(spans)
+        "gcp-pubsub" -> sendToPubSub(spans, bytesEncoder)
         else -> throw UnsupportedOperationException("Undefined Destination Type: " + config.type)
       }
     } catch (e: Exception){
@@ -79,4 +89,22 @@ class SpanTransporter: Transport {
         FluentIterable.from(spans).transform(StackdriverEncoder.V1::encode).toList();
     stackDriverSender.sendSpans(encodedSpans).execute();
   }
+
+  private fun sendToPubSub(spans: List<Span>, bytesEncoder: SpanBytesEncoder) {
+    pubSubSender.sendSpans(spans.map(bytesEncoder::encode)
+        .toList<ByteArray?>())
+    .enqueue(ZipkinCallback())
+  }
+
+  internal inner class ZipkinCallback() : Callback<Void> {
+
+    override fun onSuccess(value: Void) {
+      log.debug("Successfully wrote span {}")
+    }
+
+    override fun onError(t: Throwable) {
+      log.error("Unable to write span {}")
+    }
+  }
 }
+
